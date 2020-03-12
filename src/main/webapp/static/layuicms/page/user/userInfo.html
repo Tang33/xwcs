@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>个人资料</title>
+<meta name="renderer" content="webkit">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<link rel="stylesheet" href="../../layui/css/layui.css" media="all" />
+<link rel="stylesheet" href="../../css/public.css" media="all" />
+
+</head>
+<body class="childrenBody">
+	<form class="layui-form layui-row" id="userinfoform">
+		<div class="layui-col-md3 layui-col-xs12 user_right">
+			<div class="layui-upload-list">
+				<img class="layui-upload-img layui-circle userFaceBtn userAvatar" id="userFace" name="userFace" src="../face.png">
+			</div>
+			<button type="button" class="layui-btn layui-btn-primary userFaceBtn" id="tx">
+				<i class="layui-icon">&#xe67c;</i> 点击跟换头像
+			</button>
+			<p>选择本地的图片，跟换头像</p>
+		</div>
+		<div class="layui-col-md6 layui-col-xs12">
+			<div class="layui-form-item">
+				<label class="layui-form-label">用户名</label>
+				<div class="layui-input-block">
+					<input type="text" value='' id="username" disabled
+						class="layui-input layui-disabled">
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">工号</label>
+				<div class="layui-input-block">
+					<input type="text" id="rygh" name="rygh" class="layui-input"
+						disabled>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">真实姓名</label>
+				<div class="layui-input-block">
+					<input type="text" value="" id="name" name="name"
+						placeholder="请输入真实姓名" lay-verify="required"
+						class="layui-input realName">
+				</div>
+			</div>
+			<div class="layui-form-item" pane="">
+				<label class="layui-form-label">性别</label>
+				<div class="layui-input-block userSex">
+					<select id="sex" name="sex" lay-verify="required" lay-search=""
+						lay-filter="sex">
+						<option value="">请选择性别</option>
+						<option value="男">男</option>
+						<option value="女">女</option>
+					</select>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">手机号码</label>
+				<div class="layui-input-block">
+					<input type="tel" value="" id="phone" name="phone"
+						placeholder="请输入手机号码" lay-verify="phone"
+						class="layui-input userPhone">
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">身份证号</label>
+				<div class="layui-input-block">
+					<input type="text" id="sfzh" name="sfzh" placeholder="请输入身份证号"
+						class="layui-input">
+				</div>
+			</div>
+
+		</div>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<center>
+					<button class="layui-btn" lay-submit="" lay-filter="changeUser">立即提交</button>
+					<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+				</center>
+			</div>
+		</div>
+	</form>
+	<script type="text/javascript" src="../../../js/jquery.min.js"></script>
+	<script type="text/javascript" src="../../layui/layui.js"></script>
+	<script type="text/javascript" src="../../js/cacheUserInfo.js"></script>
+	<script>
+		layui.use('upload', function() {
+			var upload = layui.upload;
+			$.ajax({
+				url:"../../../../download.do",
+				type:"post",
+				data:{
+					lx:"rygl",
+					name:"tx"
+				},
+	            success: function(obj){
+	            	console.log(obj);
+	            	if(obj!=null&&obj!=''&&obj!=undefined){
+	            		$('#userFace').attr('src', obj); //图片链接（base64）
+	            	}
+	            	
+				},
+				error:function(){
+					alert("读取文件异常");
+				}
+			});
+			upload.render({
+				elem : '#tx',
+				url : '../../../../upload.do?lx=rygl&name=tx',
+				auto : true //选择文件后不自动上传
+				,
+				before: function(obj){
+		              //预读本地文件示例，不支持ie8
+		              obj.preview(function(index, file, result){
+		            	  $('#userFace').attr('src', result); //图片链接（base64）
+		              });
+		              layer.load(); //上传loading
+		            },
+				choose : function(obj) {
+					//将每次选择的文件追加到文件队列
+					var files = obj.pushFile();
+
+					//预读本地文件，如果是多文件，则会遍历。(不支持ie8/9)
+					obj.preview(function(index, file, result) {
+						console.log(index); //得到文件索引
+						console.log(file); //得到文件对象
+						console.log(result); //得到文件base64编码，比如图片
+
+						//obj.resetFile(index, file, '123.jpg'); //重命名文件名，layui 2.3.0 开始新增
+
+						//这里还可以做一些 append 文件列表 DOM 的操作
+
+						//obj.upload(index, file); //对上传失败的单个文件重新上传，一般在某个事件中使用
+						//delete files[index]; //删除列表中对应的文件，一般在某个事件中使用
+					});
+				},
+				done: function(res, index, upload) {
+                    if(res.code == 0) { //上传成功
+                    	alert("上传成功！");
+                    	window.parent.tx();
+                    }else{
+                    	alert("上传失败！");
+                    }
+                    layer.closeAll('loading'); //关闭loading
+                },
+                error: function(index, upload) {
+                    alert("上传异常！");
+                    layer.closeAll('loading'); //关闭loading
+                }
+			});
+		});
+	</script>
+</body>
+</html>
